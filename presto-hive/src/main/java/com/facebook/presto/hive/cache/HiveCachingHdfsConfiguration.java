@@ -80,10 +80,7 @@ public class HiveCachingHdfsConfiguration
             catch (IOException e) {
                 throw new PrestoException(GENERIC_INTERNAL_ERROR, "cannot create caching file system", e);
             }
-        });
-        Configuration defaultConfig = hiveHdfsConfiguration.getConfiguration(context, uri);
-
-        copy(defaultConfig, config);
+        }, hiveHdfsConfiguration.getConfiguration(context, uri));
         return config;
     }
 
@@ -96,6 +93,12 @@ public class HiveCachingHdfsConfiguration
         private CachingJobConf(BiFunction<Configuration, URI, FileSystem> factory)
         {
             super(false);
+            this.factory = requireNonNull(factory, "factory is null");
+        }
+
+        private CachingJobConf(BiFunction<Configuration, URI, FileSystem> factory, Configuration conf)
+        {
+            super(conf);
             this.factory = requireNonNull(factory, "factory is null");
         }
 
