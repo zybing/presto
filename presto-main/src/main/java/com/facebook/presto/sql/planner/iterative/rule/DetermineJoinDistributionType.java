@@ -30,9 +30,11 @@ import io.airlift.units.DataSize;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.facebook.presto.SystemSessionProperties.getJoinDistributionType;
 import static com.facebook.presto.SystemSessionProperties.getJoinMaxBroadcastTableSize;
+import static com.facebook.presto.SystemSessionProperties.isUseBroadcastJoinFirst;
 import static com.facebook.presto.cost.CostCalculatorWithEstimatedExchanges.calculateJoinCostWithoutOutput;
 import static com.facebook.presto.sql.analyzer.FeaturesConfig.JoinDistributionType.AUTOMATIC;
 import static com.facebook.presto.sql.planner.optimizations.QueryCardinalityUtil.isAtMostScalar;
@@ -87,6 +89,18 @@ public class DetermineJoinDistributionType
 
         addJoinsWithDifferentDistributions(joinNode, possibleJoinNodes, context);
         addJoinsWithDifferentDistributions(joinNode.flipChildren(), possibleJoinNodes, context);
+
+        boolean useBroadcastJoinFirst = isUseBroadcastJoinFirst(context.getSession());
+        if (useBroadcastJoinFirst) {
+            List<PlanNodeWithCost> filtedNode = possibleJoinNodes.stream().filter(result ->
+                    ((JoinNode) result.getPlanNode()).getDistributionType().get().equals(REPLICATED)).collect(Collectors.toList());
+            if (filtedNode.size() == 1) {
+                return filtedNode.get(0).getPlanNode();
+            }
+            else if (filtedNode.size() > 1) {
+                possibleJoinNodes = filtedNode;
+            }
+        }
 
         if (possibleJoinNodes.stream().anyMatch(result -> result.getCost().hasUnknownComponents()) || possibleJoinNodes.isEmpty()) {
             return getSyntacticOrderJoin(joinNode, context, AUTOMATIC);

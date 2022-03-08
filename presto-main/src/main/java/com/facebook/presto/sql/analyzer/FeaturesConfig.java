@@ -70,6 +70,7 @@ public class FeaturesConfig
     private boolean distributedIndexJoinsEnabled;
     private JoinDistributionType joinDistributionType = JoinDistributionType.AUTOMATIC;
     private DataSize joinMaxBroadcastTableSize = new DataSize(100, MEGABYTE);
+    private boolean useBroadcastJoinFirst;
     private boolean colocatedJoinsEnabled = true;
     private boolean groupedExecutionEnabled = true;
     private boolean recoverableGroupedExecutionEnabled;
@@ -479,6 +480,18 @@ public class FeaturesConfig
     public FeaturesConfig setJoinMaxBroadcastTableSize(DataSize joinMaxBroadcastTableSize)
     {
         this.joinMaxBroadcastTableSize = joinMaxBroadcastTableSize;
+        return this;
+    }
+
+    public boolean isUseBroadcastJoinFirst()
+    {
+        return useBroadcastJoinFirst;
+    }
+
+    @Config("use-broadcast-join-first")
+    public FeaturesConfig setUseBroadcastJoinFirst(boolean useBroadcastJoinFirst)
+    {
+        this.useBroadcastJoinFirst = useBroadcastJoinFirst;
         return this;
     }
 

@@ -72,6 +72,7 @@ public final class SystemSessionProperties
 {
     public static final String OPTIMIZE_HASH_GENERATION = "optimize_hash_generation";
     public static final String JOIN_DISTRIBUTION_TYPE = "join_distribution_type";
+    public static final String USE_BROADCAST_JOIN_FIRST = "use_broadcast_join_first";
     public static final String JOIN_MAX_BROADCAST_TABLE_SIZE = "join_max_broadcast_table_size";
     public static final String DISTRIBUTED_JOIN = "distributed_join";
     public static final String DISTRIBUTED_INDEX_JOIN = "distributed_index_join";
@@ -284,6 +285,11 @@ public final class SystemSessionProperties
                         false,
                         value -> JoinDistributionType.valueOf(((String) value).toUpperCase()),
                         JoinDistributionType::name),
+                booleanProperty(
+                        USE_BROADCAST_JOIN_FIRST,
+                        "When broadcast join in candidate join list, use broadcast join first.",
+                        featuresConfig.isUseBroadcastJoinFirst(),
+                        false),
                 new PropertyMetadata<>(
                         JOIN_MAX_BROADCAST_TABLE_SIZE,
                         "Maximum estimated size of a table that can be broadcast for JOIN.",
@@ -1310,6 +1316,11 @@ public final class SystemSessionProperties
         }
 
         return session.getSystemProperty(JOIN_DISTRIBUTION_TYPE, JoinDistributionType.class);
+    }
+
+    public static boolean isUseBroadcastJoinFirst(Session session)
+    {
+        return session.getSystemProperty(USE_BROADCAST_JOIN_FIRST, Boolean.class);
     }
 
     public static DataSize getJoinMaxBroadcastTableSize(Session session)
